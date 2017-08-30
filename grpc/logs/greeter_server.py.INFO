@@ -1,0 +1,12 @@
+20170830 13:03:44.928 INFO greeter_server_demo:108 Creating channel to translation server at localhost:50061
+20170830 13:03:44.931 INFO greeter_server:66 Server listening on port 50051
+20170830 13:03:44.934 INFO greeter_server_demo:52 Creating Translator stub.
+20170830 13:03:44.937 INFO greeter_server_demo:114 Server listening on port 50071
+20170830 13:04:47.187 INFO greeter_server_demo:108 Creating channel to translation server at localhost:50061
+20170830 13:04:47.191 INFO greeter_server_demo:52 Creating Translator stub.
+20170830 13:04:47.192 INFO greeter_server:66 Server listening on port 50051
+20170830 13:04:47.193 INFO greeter_server_demo:114 Server listening on port 50071
+20170830 13:12:19.91 INFO greeter_server_demo:108 Creating channel to translation server at localhost:50061
+20170830 13:12:19.95 INFO greeter_server_demo:52 Creating Translator stub.
+20170830 13:12:19.98 INFO greeter_server_demo:114 Server listening on port 50071
+20170830 13:12:19.101 INFO greeter_server:66 Server listening on port 50051

@@ -1,0 +1,4 @@
+Log file created at: 2017/08/30 13:12:18
+Running on machine: ip-172-31-17-63
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0830 13:12:18.998288  2478 translation_server.cc:199] Translation Service listening on 0.0.0.0:50061

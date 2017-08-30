@@ -1,0 +1,5 @@
+20170830 13:13:16.952 INFO greeter_client:53 Creating channel to greeter server at localhost:50051
+20170830 13:13:16.954 INFO greeter_client:56 Waiting for channel to become ready...
+20170830 13:13:17.170 INFO greeter_client:63 Creating Greeter stub.
+20170830 13:13:17.170 INFO greeter_client:66 Sending request
+20170830 13:13:17.171 INFO greeter_client:71 Greeting received: Hello, world!

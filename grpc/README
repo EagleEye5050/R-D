@@ -1,0 +1,37 @@
+/  _          _ _       _  \
+| | |__   ___| | | ___ | | |
+| | '_ \ / _ \ | |/ _ \| | |
+| | | | |  __/ | | (_) |_| |
+| |_| |_|\___|_|_|\___/(_) |
+\                          /
+ --------------------------
+      \                    / \  //\
+       \    |\___/|      /   \//  \\
+            /0  0  \__  /    //  | \ \
+           /     /  \/_/    //   |  \  \
+           @_^_@'/   \/_   //    |   \   \
+           //_^_/     \/_ //     |    \    \
+        ( //) |        \///      |     \     \
+      ( / /) _|_ /   )  //       |      \     _\
+    ( // /) '/,_ _ _/  ( ; -.    |    _ _\.-~        .-~~~^-.
+  (( / / )) ,-{        _      `-.|.-~-.           .~         `.
+ (( // / ))  '/\      /                 ~-. _ .-~      .-~^-.  \
+ (( /// ))      `.   {            }                   /      \  \
+  (( / ))     .----~-.\        \-'                 .~         \  `. \^-.
+             ///.----..>        \             _ -~             `.  ^-`  ^-_
+               ///-._ _ _ _ _ _ _}^ - - - - ~                     ~-- ,.-~
+                                                                  /.-~
+
+Welcome to the gRPC Workshop!
+
+This directory contains the exercises/examples, in C++, Java, Go, and Python, in
+the respectively named subdirectories.
+
+To get stuck right in, run:
+  $ ./run.sh
+
+The script will loop forever, prompting you to build everything and/or run the
+provided end-to-end test cases. We suggest you leave it running in a separate
+shell (a second terminal window, GNU screen, tmux...)
+
+A copy of the handout is available in this directory, workshop_handout.txt

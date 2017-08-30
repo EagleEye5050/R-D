@@ -1,0 +1,10 @@
+20170830 13:03:45.161 INFO greeter_client:53 Creating channel to greeter server at localhost:50051
+20170830 13:03:45.163 INFO greeter_client:56 Waiting for channel to become ready...
+20170830 13:03:45.379 INFO greeter_client:63 Creating Greeter stub.
+20170830 13:03:45.379 INFO greeter_client:66 Sending request
+20170830 13:03:45.381 INFO greeter_client:71 Greeting received: Hello, SREcon attendee!
+20170830 13:12:20.105 INFO greeter_client:53 Creating channel to greeter server at localhost:50051
+20170830 13:12:20.106 INFO greeter_client:56 Waiting for channel to become ready...
+20170830 13:12:20.322 INFO greeter_client:63 Creating Greeter stub.
+20170830 13:12:20.322 INFO greeter_client:66 Sending request
+20170830 13:12:20.323 INFO greeter_client:71 Greeting received: Hello, SREcon attendee!

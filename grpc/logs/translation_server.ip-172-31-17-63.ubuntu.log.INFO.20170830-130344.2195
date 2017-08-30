@@ -1,0 +1,5 @@
+Log file created at: 2017/08/30 13:03:44
+Running on machine: ip-172-31-17-63
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0830 13:03:44.102231  2195 translation_server.cc:199] Translation Service listening on 0.0.0.0:50061
+I0830 13:04:33.830837  2195 translation_server.cc:177] Received SIGTERM, shutting down.

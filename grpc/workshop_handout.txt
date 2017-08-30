@@ -1,0 +1,217 @@
+SRE your gRPC – Workshop Materials
+Workshop Materials
+SRE your gRPC
+
+
+Protocol Buffers and gRPC
+We have a dance! Tell us what you think https://goo.gl/forms/TOGpvAXCUrCQPgt12
+The Workshop Environment
+We will use the strigo.io interactive platform. The platform requires the Chrome browser, and a strigo account. If you do not have one, you will be prompted to create one when you access the class.
+Class link: [link goes here] -  you will need an account and a token
+You will be working on a Linux virtual machine:
+* All required grpc and proto libraries and tools are installed.
+* We will be working from the $HOME/grpc/ subdirectory.
+All tools will expect this to be the case, and are unlikely to work correctly otherwise!
+* There is no IDE, but:
+   * we'll be editing only one file
+   * there's a script wrapper to build and run everything.
+   * All editors we could think of are available: vim, emacs, joe, jed, nano.
+   * If you have an X server on your laptop, you can ssh to your VM, and use X forwarding to run gedit, nedit.
+   * The VM will be destroyed when you end your session. If you want to keep anything, you can use SSH (scp) to copy it out.
+   * You will probably want multiple shells. You have multiple options:
+   * Multiple terminal tabs within the strigo web app
+   * SSH to your VM from your laptop (see the $HOME/HOW-TO-SSH file)
+   * GNU screen or tmux (both are available)
+A description of other helpers provided for the workshop is at the end.
+We want you to try out a few things on Strigo
+   * Join the class link
+   * Check you can access your "Lab" (the little cloud on the LHS)
+   * Make sure you can see the presentation
+
+
+Exercise 0 - 1 : The Greeter Service
+Exercise 0 : Send an RPC
+Goal: Familiarise yourself with the environment and basic RPC server debugging.
+   1. The stack of servers can be controlled using the ./run.sh shell script. It takes no arguments, and runs an interactive loop.
+   2. In a tab, start up our helper script  ./run.sh and select the "Launch servers" option, simply use the default cpp option for now.
+   * The script will build multiple binaries in the build/ subdirectory. The Greeter Server and the Translation Server will be running now on your localhost. You can use it to select the language you want to use for the exercises (you can change your mind at any time). We recommend keeping this running it's own tab.
+   1. In a new tab, use our helper client build/greeter_client
+   * You'll see a Hello, World! If all has gone to plan. Play around with this client now, it accepts various flags. They are all optional; use --help to get a full list and their default values.
+   * We are providing this for the workshop so you don't have to craft protos by hand to talk to the Greeter Server regardless of code language. gRPC does provide it's own command line tool, let's also try that.
+   1. Run the grpc_cli tool against the Greeter Server (unless you are using python, which does not yet support reflection; instead run against the Translation Server on port 50061):
+   * grpc_cli ls localhost:50051 to list the advertised services.
+   * grpc_cli ls localhost:50051 srecon.Greeter to list methods provided by the service.
+   * grpc_cli ls -l localhost:50051 srecon.Greeter to list details about the Greeter method and message used.
+   * grpc_cli call localhost:50051 srecon.Greeter.SayHello 'name: "bob"' to send the rpc to the method.
+   1. Look at the files in the  logs/ subdirectory.
+   * All our binaries create <name>.STDOUT and <name>.STDERR files here. These help with debugging in later exercises. You will find other types of logs and logs can be written to other places, depending on the language (and therefore logging library).
+________________
+
+
+Exercise 1: Add a new gRPC backend to the Greeter
+Goal : update the Greeter Server to call the Translator service and get the correct translation for "Hello".
+   1. Edit the greeter_server source file.
+   * The parts that are relevant to this exercise are marked with "EXERCISE 1" code comments.
+   1. Add a service stub to the Translator.
+   * By default, it is listening on localhost:50061; you can hardcode this, or add a flag, at your option.
+   1. Update the SayHello method to forward the HelloRequest.locale and the "Hello" default message, and use the returned translation for the HelloReply.message.
+   2. Test/exercise your code by running ./run.sh and selecting the "Test Exercise 1" option. 
+Hints:
+   * Look at the greeter_client code (in your selected language) and the protos/greeter.proto file.
+   * Don't re-create the stub for every call; re-use it. If the connection is lost, the stub will automatically attempt to reconnect.
+   * Look at protos/translator.proto for the service API. Optionally use grpc_cli to experiment. Be aware that the translation_server is implemented trivially, with a tiny set of translations (which you can see in cpp/translation_server.cc, kTransDB).
+________________
+
+
+Exercise 2 - 4: Fail Early, Fail Gracefully
+Exercise 2: Client Deadlines and Server Timeouts
+Goal : update the Greeter Server to propagate the client deadline, and set a default deadline.
+   1. Reason about what the deadline value should be and why.
+   2. Edit the greeter_server source file.
+   * Propagate the client context to the translator call from the greeter, if you're not already doing that, do make sure your change passes Exercise 1 tests before moving on.
+   * The deadlines of the client will be passed by the greeter through to the rpcs being sent to the translator service.
+   * You can confirm the deadlines in the logs/translation_server.INFO
+   1. Edit the greeter_server source file again.
+   * Set a deadline for the Greeter rpc to the Translator SayHello. You can hardcode it, for now. 
+   * Replace the previous hard-coded deadline, with the default deadline flag marked Exercise 2 i.e. 20 seconds.
+   * You can again confirm the deadlines in the logs/translation_server.INFO
+   1. Edit the greeter_server source file again.
+   * Ensure that if the client did not set a deadline, the default deadline flag is used instead.
+   1. Run ./run.sh and select the "Test Exercise". Please be aware we're running with default deadlines so these tests will take longer.
+Hints:
+   * C++ context->deadline() and ClientContext::FromServerContext()
+   * Java  Context.current().getDeadline() and translatorStub.withDeadlineAfter()
+   * Golang  context.Deadline() and context.WithDeadline()
+   * Python context.time_remaining() and self._translator.Translate() timeout=
+https://landing.google.com/sre/book/chapters/addressing-cascading-failures.html  discusses this subject in much more detail.
+________________
+
+
+Exercise 3: Backend Disappears
+Goal : update the Greeter Server to be reliable even if the Translator backend isn't available.
+   1. Return the default greeting if the translation is not successful, (a prefix set to "Hello").
+   2. If the Translation Server  backend is down, make sure the Greeter Server
+   * starts up anyway
+   * is available to the client for the SayHello stub
+   * fails early if the translator stub is down
+   1. Test/exercise your code by running ./run.sh and selecting the "Test Exercise" options for this exercise. You can also confirm the behavior with the grpc_cli ls, and call options.
+Extra Credit - depending on your language choice these will help with our streaming work late.
+   * The client may only be willing to wait a given amount of time, fail early and don't wait for the timeout if the client is no longer waiting on a response.
+   * If the client is no longer waiting change the code so the Greeter doesn't send the request to the Translator backend.
+Hints:
+   * C++  set_wait_for_ready() and context->IsCancelled()
+   * Java withWaitForReady() and isCancelled()
+   * Golang FailFast and ctx.Err 
+   * Python  grpc.channel_ready_future() context.is_active()
+________________
+
+
+Exercise 4: Be cheap and be helpful
+Goal : update the Greeter Server to make debugging RPC's failing in other ways, maybe even intermittently.
+
+
+   1. Coders choice, any or all of the following
+   * Add logging of a check to see if the client deadline has expired.
+   * Add logging for how long it took the translator to reply.
+   * Add logging for what kind of status code was returned.
+   * If the request failed, log the request. Is this cheap or expensive?
+   1. Check out the results of using a super short deadline for the call, how fast is the code ?
+   2. Test/exercise your code by running ./run.sh and selecting the "Test Exercise" options. 
+   * This will have the Translator backend return a variety of behaviours which will exercise your logging results above.
+Hints:
+Use the codes to understand how you want to handle the failures. You can peek at the logs/exerciser.INFO to see the result of the test cases. https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+   * C++  LOG_EVERY_N() and status.error_code() status.error_message()
+   * Java logger.log() and  e.getStatus() 
+   * Golang log.Printf() and status.Error()
+   * Python logging.info() and except grpc.RpcError
+________________
+Exercise 5 : Streaming is "Special"
+Exercise 5: Bi-directional Streaming, Client and Server
+Goal : Update the Greeter Service to add the ManyHellos streaming variant to send data to the client as it becomes available.
+Buffering everything may not always be fast enough or even possible; send data as it becomes available. In this example, we'll do it in both directions at once.
+      1. For each request read from the client stream, send a streaming RPC to the translation server, and send the responses to the client as they become available.
+      2. Test/exercise your code by running ./run.sh and selecting the "Test Exercise" / "Bi-directional Streaming" options.
+      * This will run through some example requests and expected result sets.
+      * grpc_cli does not support streaming RPCs.
+      1. Pass any errors received from the translation server to the client.
+Hints:
+      * C++  "while (stream.Read(&reply) {}" must be followed by checking "stream.Finish()", in case of partial results.
+      * Java There is no synchronous interface. You need to fill in the returned StreamObserver's onNext() with the desired behaviour (it needs to call responseObserver.onNext() with the responses).
+      * Golang clientStream.Recv()'s error return value will be io.EOF when the client is done sending; this is not an error (as opposed to other non-nil values). clientStream.Send() does not have such a sentinel; it returns nil on success.
+      * Python simply iterate over the input and yield the results; grpc takes care of the rest. Error signalling uses grpc.RpcError exceptions.
+Streaming Timeouts and Other Stories Failures
+Goal : Streaming comes with its own set of considerations; let's find some questions to ask.
+This is entirely optional.
+      1. Run ./run.sh and select the "Test Exercise" / "Streaming Timeouts" options.
+      * This will cause the translation server to return various partial results.
+      1. Coder's choice:
+      * Change the server to buffer results, and only return all or none. (The exerciser will treat this as failed tests, but print the received data). Do this either by request or for everything.
+      * Add initial_metadata to the RPC returns (this varies a lot by language) to signal how many requests/responses should be expected.
+      * Add a translation cache to the server. For cases where the client has set a deadline and does not wait for all results, continue reading the translations and return them from the cache the next time.
+Hints:
+      * Use the greeter_client with the --streaming and --deadline_ms options to exercise the server by hand, if you want.
+________________
+Appendix: Tools and Utilities
+Building and Running
+The "Everything Wrapper"
+./run.sh
+A wrapper for the other tools listed here. It runs an infinite loop, presenting a menu of options and invoking the necessary action(s) for them.
+This is the recommended way to run everything (because it will leave your workspace in a known state).
+Makefiles and make
+Top-level Makefile
+This has no default target. It has per-language targets: cpp, python (or py), golang (or go), and java. These build the relevant subdirectory's default target.
+golang/Makefile
+java/Makefile
+python/Makefile
+These will by default build their respective greeter_server and greeter_client binaries (or jar+wrapper, in the case of Java).
+cpp/Makefile
+As above, but will also build the translation_server (as a shared backend for all languages' Greeter Servers), as well as auxiliary tools for the exercises.
+Other Tools
+grpc_cli
+See Exercise 0.
+Canned Tests
+build/exerciser
+        A black-box end to end tester. Invoked by ./run.sh via the "Run Exercise Tests" option.
+You can run it manually, for example:
+build/exerciser \
+  --greeter_server=localhost:50051 \
+  --translation_server=localhost:50061 \
+  --log_dir=logs \
+  --exercise 1
+Built Artefacts
+build/greeter_client
+build/greeter-client.jar
+build/go_greeter_client
+build/greeter_client.py
+An example client in your language of choice, that demonstrates basic usage of the Greeter Server.
+build/greeter_server
+build/greeter-server.jar
+build/go_greeter_server
+build/greeter_server.py
+The Greeter Server built from the code you are (or will be) working on, in your language of choice.
+build/greeter_server_demo
+build/greeter-server-demo.jar
+build/go_greeter_server_demo
+build/greeter_server_demo.py
+An example Greeter Server in your language of choice that shows one way of implementing all of the exercises.
+build/translation_server
+The Translation Server backend to be used by the Greeter Server. Written in C++ only (gRPC allows mixing and matching client and server languages), and with additional interfaces and capabilities for the workshop.
+build/exerciser
+A tool to run the exercise-specific canned tests, see below.
+build/*.grpc.pb.cc, build/*.grpc.pb.h, build/*.pb.cc, build/*.pb.h
+build/*_pb2_grpc.py, build/*_pb2.py
+golang/src/*/proto.pb.go
+java/target/generated-sources/protobuf/*
+Language-specific generated code from the input proto files.
+build/*.o, build/*.pyc, java/target/*
+Intermediate build output files.
+Workspace Management
+Cleaning Up
+make realclean
+From the $HOME/grpc directory, running this will delete all build artefacts and all logs.
+Factory Reset
+restore_grpc
+You can run this at any time. It will rename $HOME/grpc with a timestamp suffix, and recreate it in the initial state - with none of your edits.
+Example Solutions
+USE_TEST=1 ./run.sh
+This will run tests against the greeter_server_demo (or language equivalent).
